@@ -20,3 +20,4 @@ logit.test <- 1/(1+exp(-pred.test))
 result.test <- ifelse(logit.test<0.5,0,1) # 0.5 is set as the border of survival, which can be changed
 
 ans <- data.frame("PassengerId"=test_raw$PassengerId,"Survived"=result.test)
+
