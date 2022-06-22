@@ -1,8 +1,8 @@
 library(tidyverse)
 library(randomForest)
-train <- read.csv("./titanic/d_train.csv")# %>% select(-c("PassengerId","Name","Ticket"))
+train <- read.csv("./titanic/d_train.csv")
 test_raw <- read.csv("./titanic/input/test.csv")
-test <- read.csv("./titanic/d_test.csv")# %>% select(-c("PassengerId","Name","Ticket")) %>% mutate(Cabin = str_sub(Cabin,1,1))
+test <- read.csv("./titanic/d_test.csv")
 
 #tuning
 set.seed(1234)
@@ -15,4 +15,3 @@ res <- predict(rf, test)
 res <- ifelse(res<=0.5,0,1)
 
 ans <- data.frame("PassengerId"=test_raw$PassengerId,"Survived"=res)
-write.csv(ans,"./titanic/myans.csv",row.names = FALSE)
