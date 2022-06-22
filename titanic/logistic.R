@@ -1,8 +1,8 @@
 library(MASS)
 library(tidyverse)
-train <- read.csv("./titanic/d_train.csv")
-test_raw <- read.csv("./titanic/input/test.csv")
-test <- read.csv("./titanic/d_test.csv")
+train <- read.csv("d_train.csv")
+test_raw <- read.csv(".input/test.csv")
+test <- read.csv("d_test.csv")
 
 fit <- glm(Survived~., data=train, family = binomial)
 # search the most fitted combination of variables by AIC

@@ -1,0 +1,117 @@
+---
+title: "binary classification"
+author: "Satoru"
+date: '2022-06-22'
+output: rmarkdown::github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Titanic Analysis
+
+This is a basic but convenient machine learning method when it comes to binary classification problems.
+Here, I use titanic data from [Kaggle](https://www.kaggle.com/competitions/titanic/data)
+
+### Preprocessing
+```{r library, include=F, warning=F, message=F}
+library(tidyverse)
+library(randomForest)
+library(MASS)
+```
+
+```{r input}
+d <- read.csv("./input/train.csv")
+head(d)
+```
+Our objective is to learn this data and create a model to predict target variable "Survived".
+For a quick analysis, let me exclude Name, Ticket as well as PassengerID which is meaningless.
+Cabin looks useful so let's take the Capitals.
+
+Then, take a look at Age.
+```{r}
+map_dbl(d, ~sum(is.na(.)))
+```
+we have 177 of age missing. Want to fill them anyhow.
+
+I use regression to fill missing Ages and process Cabin column.
+
+```{r}
+d_lm <- d[,-c(1,4,9)] %>% mutate(Cabin = str_sub(Cabin,1,1))
+mr <- lm(Age~.,data = d_lm)
+pred <- predict(mr, d_lm)
+d_train <- d_lm %>% mutate(Cabin = str_sub(Cabin,1,1),pred=ifelse(pred<0,0,pred)) %>% 
+  mutate(Age = ifelse(is.na(Age==T),pred,Age)) %>% mutate(Age=ifelse(Age<0,0,Age),Survived=factor(Survived,levels=c(0,1))) %>% dplyr::select(-pred)
+head(d_train)
+```
+For the test data, apply the same treatment.
+```{r}
+d_lm2 <- read.csv("./input/test.csv")
+d_lm2 <- d_lm2[,-c(1,3,8)] %>% mutate(Cabin = str_sub(Cabin,1,1))
+
+mr2 <- lm(Age~.,data = d_lm2)
+pred <- predict(mr2, d_lm2)
+
+d_test <- d_lm2 %>% mutate(Cabin = str_sub(Cabin,1,1),pred=ifelse(pred<0,0,pred)) %>% 
+  mutate(Age = ifelse(is.na(Age==T),pred,Age)) %>% mutate(Age=ifelse(Age<0,0,Age)) %>% dplyr::select(-pred)
+
+head(d_test)
+```
+
+Now, ready to analyze!
+
+### Explanatory Data Analysis
+Before prediction, take a look at distributions of each variable on target variable.
+```{r warning=F, message=F}
+(g_class <- d_train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Pclass) + labs(title="PClass"))
+(g_sex <- d_train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Sex) + labs(title="Sex"))
+(g_cabin <- d_train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Cabin) + labs(title="Cabin"))
+(g_embark <- d_train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Embarked) + labs(title="Embarked"))
+(g_parch <- d_train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Parch) + labs(title="Parch"))
+(g_age <- d_train %>% ggplot(aes(x=Age,fill=Survived)) + geom_histogram(alpha=.4) + labs(title="Age"))
+(g_fare <- d_train %>% ggplot(aes(x=Fare,fill=Survived)) + geom_histogram(alpha=.4) + labs(title="Fare"))
+```
+### Logistic regression
+
+By AIC, detect the best model.
+```{r warning=F, message=F}
+fit <- glm(Survived~., data=d_train, family = binomial)
+# search the most fitted combination of variables by AIC
+aic <- stepAIC(fit)
+print(aic)
+```
+
+Apply the lowest AIC fomula to logistic regression.
+```{r warning=F, message=F}
+formula <- aic$formula
+fit.2 <- glm(formula = formula,data=d_train, family = binomial)
+summary(fit.2)
+```
+odds should be calculated as the fomula below
+
+odds = exp(6.06120081 - 1.34526511*Pclass - 2.73779904*Sexmale - 0.05453505*Age - 0.46442316*SibSp)
+
+```{r warning=F, message=F}
+pred.test <- predict(fit.2,d_test)
+logit.test <- 1/(1+exp(-pred.test))
+result.test <- ifelse(logit.test<0.5,0,1) 
+```
+0.5 is set as the border of survival, which can be changed
+
+### Randomforest
+```{r warning=F, message=F}
+#tuning
+set.seed(1234)
+tune <- tuneRF(d_train[,-1],d_train[,1],plot = T)
+```
+
+Use the mtry which minimizes error
+```{r warning=F, message=F}
+
+rf <- randomForest(Survived~.,data=d_train, type="classification", mtry = tune[which.min(tune[, 2]), 1])
+
+res <- predict(rf, d_test)
+res_bi <- ifelse(res<=0.5,0,1)
+```
+

@@ -1,0 +1,8 @@
+train <- read.csv("d_train.csv")
+g_class <- train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Pclass) + labs(title="PClass")
+g_sex <- train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Sex) + labs(title="Sex")
+g_cabin <- train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Cabin) + labs(title="Cabin")
+g_embark <- train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Embarked) + labs(title="Embarked")
+g_parch <- train %>% ggplot() + geom_bar(aes(Survived)) + facet_grid(.~Parch) + labs(title="Parch")
+g_age <- train %>% ggplot(aes(x=Age,fill=factor(Survived,levels=c(0,1)))) + geom_histogram(alpha=.4) + labs(title="Age")
+g_fare <- train %>% ggplot(aes(x=Fare,fill=factor(Survived,levels=c(0,1)))) + geom_histogram(alpha=.4) + labs(title="Fare")
