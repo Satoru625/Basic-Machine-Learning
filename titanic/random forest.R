@@ -15,3 +15,8 @@ res <- predict(rf, test)
 res <- ifelse(res<=0.5,0,1)
 
 ans <- data.frame("PassengerId"=test_raw$PassengerId,"Survived"=res)
+
+#model check
+plot(rf)
+imp <- as.data.frame(rf$importance)
+barplot(imp$MeanDecreaseGini,name = rownames(imp))

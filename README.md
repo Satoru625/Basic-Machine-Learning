@@ -4,4 +4,4 @@ For a quick summary, please refire to [titanic_analysis.md](https://github.com/S
 Some simple machine learning methods for binary classification.
 
 Each folder jumps to R codes showing how to execute machine learning models.
-some hyper parameters in models are tuned so as to maximize their quality.
+some hyper parameters in models are tuned so as to maximize their qualities.

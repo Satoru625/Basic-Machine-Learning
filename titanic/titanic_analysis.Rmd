@@ -88,9 +88,12 @@ formula <- aic$formula
 fit.2 <- glm(formula = formula,data=d_train, family = binomial)
 summary(fit.2)
 ```
-odds should be calculated as the fomula below
+odds $\frac{P(Survived)}{1-P(Survived)}$ should be calculated as the fomula below
 
-odds = exp(6.06120081 - 1.34526511*Pclass - 2.73779904*Sexmale - 0.05453505*Age - 0.46442316*SibSp)
+$odds = exp(6.06120081 - 1.34526511\times Pclass - 2.73779904\times Sexmale - 0.05453505\times Age - 0.46442316\times SibSp)$
+
+Lower class, Female, Younger Age, less SibSp are likely to gain survival odds.
+Sex is the most important factor out of them.
 
 ```{r warning=F, message=F}
 pred.test <- predict(fit.2,d_test)
@@ -115,3 +118,17 @@ res <- predict(rf, d_test)
 res_bi <- ifelse(res<=0.5,0,1)
 ```
 
+Check model quality and importance of each variables
+
+```{r warning=F, message=F}
+plot(rf)
+```
+Learning curve reached a plateau near 100 of trees
+
+```{r warning=F, message=F}
+imp <- as.data.frame(rf$importance)
+barplot(imp$MeanDecreaseGini,name = rownames(imp))
+```
+
+It is obvious that Sex is the most important followed by Age, Fare.
+This result matches with the coefficient of logistic regression.
