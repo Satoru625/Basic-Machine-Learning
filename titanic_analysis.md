@@ -267,10 +267,13 @@ summary(fit.2)
     ## 
     ## Number of Fisher Scoring iterations: 5
 
-odds should be calculated as the fomula below
+odds $\\frac{P(Survived)}{1-P(Survived)}$ should be calculated as the
+fomula below
 
-odds = exp(6.06120081 - 1.34526511*Pclass - 2.73779904*Sexmale -
-0.05453505*Age - 0.46442316*SibSp)
+*o**d**d**s* = *e**x**p*(6.06120081−1.34526511×*P**c**l**a**s**s*−2.73779904×*S**e**x**m**a**l**e*−0.05453505×*A**g**e*−0.46442316×*S**i**b**S**p*)
+
+Lower class, Female, Younger Age, less SibSp are likely to gain survival
+odds. Sex is the most important factor out of them.
 
 ``` r
 pred.test <- predict(fit.2,d_test)
@@ -306,3 +309,22 @@ rf <- randomForest(Survived~.,data=d_train, type="classification", mtry = tune[w
 res <- predict(rf, d_test)
 res_bi <- ifelse(res<=0.5,0,1)
 ```
+
+Check model quality and importance of each variables
+
+``` r
+plot(rf)
+```
+
+![](titanic_analysis_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+Learning curve reached a plateau near 100 of trees
+
+``` r
+imp <- as.data.frame(rf$importance)
+barplot(imp$MeanDecreaseGini,name = rownames(imp))
+```
+
+![](titanic_analysis_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+It is obvious that Sex is the most important followed by Age, Fare. This
+result matches with the coefficient of logistic regression.
