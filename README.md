@@ -99,7 +99,7 @@ head(d_test)
 
 Now, ready to analyze!
 
-### Explanatory Data Analysis
+### Exploratory Data Analysis
 
 Before prediction, take a look at distributions of each variable on
 target variable.
